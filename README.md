@@ -20,7 +20,7 @@ After building the driver (Windows SDK and Windows Driver Kit required) the inf 
 
 
 ## UserMode apps
-These applications can push frames to the driver using the property exposed in the filter. The apps are based on the **Driver** interface library which handles enumerating devices and setting the value of the property. This is written in VC++.
+These applications can push frames to the driver using the property exposed in the filter. The apps are based on the **driver interface library** which handles enumerating devices and setting the value of the property. This is written in VC++.
 
 There are two example applications:
 * **UserDriverStaticImage**: This app can push static images to the driver.
