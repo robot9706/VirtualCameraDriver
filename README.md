@@ -18,6 +18,8 @@ Accessing this property can be done using DirectShow.
 ### Driver installation:
 After building the driver (Windows SDK and Windows Driver Kit required) the inf can be installed using **hdwwiz.exe** (can be launched in CMD).
 
+Test signing might be required to be enabled for driver installation:
+`bcdedit.exe -set TESTSIGNING ON`
 
 ## UserMode apps
 These applications can push frames to the driver using the property exposed in the filter. The apps are based on the **driver interface library** which handles enumerating devices and setting the value of the property. This is written in VC++.
