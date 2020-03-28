@@ -329,7 +329,13 @@
     <None Exclude="@(None)" Include="*.def;*.bat;*.hpj;*.asmx" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="avshws.h" />
+    <ClInclude Include="capture.h" />
     <ClInclude Exclude="@(ClInclude)" Include="customprops.h" />
+    <ClInclude Include="device.h" />
+    <ClInclude Include="filter.h" />
+    <ClInclude Include="hwsim.h" />
+    <ClInclude Include="image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

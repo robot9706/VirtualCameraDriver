@@ -73,6 +73,11 @@ private:
     //
     PUCHAR m_SynthesisBuffer;
 
+	//
+	// A temporary frame buffer;
+	//
+	PUCHAR m_TemporaryBuffer;
+
     //
     // Key information regarding the frames we generate.
     //

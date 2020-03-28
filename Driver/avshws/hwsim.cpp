@@ -230,6 +230,23 @@ Return Value:
         Status = STATUS_INSUFFICIENT_RESOURCES;
     }
 
+	//
+	// Allocate a temporary frame buffer;
+	//
+	m_TemporaryBuffer = reinterpret_cast <PUCHAR> (
+		ExAllocatePoolWithTag(
+			NonPagedPoolNx,
+			m_ImageSize,
+			AVSHWS_POOLTAG
+			)
+		);
+
+	if (!m_TemporaryBuffer) {
+		Status = STATUS_INSUFFICIENT_RESOURCES;
+	}
+
+	RtlZeroMemory(m_TemporaryBuffer, m_ImageSize);
+	
     //
     // If everything is ok, start issuing interrupts.
     //
@@ -416,6 +433,11 @@ Return Value:
         ExFreePool (m_SynthesisBuffer);
         m_SynthesisBuffer = NULL;
     }
+
+	if (m_TemporaryBuffer) {
+		ExFreePool(m_TemporaryBuffer);
+		m_TemporaryBuffer = NULL;
+	}
 
     //
     // Protect the S/G list
@@ -738,95 +760,13 @@ Return Value:
 
 	if (m_HardwareState == HardwareRunning)
 	{
+		RtlCopyMemory(m_SynthesisBuffer, m_TemporaryBuffer, m_ImageSize);
+
 		if (!NT_SUCCESS(FillScatterGatherBuffers())) {
 			InterlockedIncrement(PLONG(&m_NumFramesSkipped));
 		}
 	}
 
-    //
-    // The hardware can be in a pause state in which case, it issues interrupts
-    // but does not complete mappings.  In this case, don't bother synthesizing
-    // a frame and doing the work of looking through the mappings table.
-    //
-  ////  if (m_HardwareState == HardwareRunning) {
-  ////  
-  ////      //
-  ////      // Generate a "time stamp" just to overlay it onto the capture image.
-  ////      // It makes it more exciting than bars that do nothing.
-  ////      //
-  ////      LONGLONG PtsRel = ((m_InterruptTime + 1) * m_TimePerFrame);
-  ////  
-  ////      ULONG Min = (ULONG)(PtsRel / 600000000);
-  ////      ULONG RemMin = (ULONG)(PtsRel % 600000000);
-  ////      ULONG Sec = (ULONG)(RemMin / 10000000);
-  ////      ULONG RemSec = (ULONG)(RemMin % 10000000);
-  ////      ULONG Hund = (ULONG)(RemSec / 100000);
-  ////  
-  ////      //
-  ////      // Synthesize a buffer in scratch space.
-  ////      //
-  ////      m_ImageSynth -> SynthesizeBars ();
-  ////  
-  ////      CHAR Text [256];
-  ////      Text[0] = '\0';
-  ////      (void) RtlStringCbPrintfA(Text, sizeof(Text), "%ld:%02ld.%02ld", Min, Sec, Hund);
-  ////  
-  ////      //
-  ////      // Overlay a clock onto the scratch space image.
-  ////      //
-  ////      m_ImageSynth -> OverlayText (
-  ////          POSITION_CENTER,
-  ////          (m_Height - 28),
-  ////          1,
-  ////          Text,
-  ////          BLACK,	
-  ////          WHITE
-  ////          );
-  ////  
-  ////      //
-  ////      // Overlay a counter of skipped frames onto the scratch image.
-  ////      //
-  ////      (void) RtlStringCbPrintfA(Text, sizeof(Text), "Skipped: %ld", m_NumFramesSkipped);
-  ////      m_ImageSynth -> OverlayText (
-  ////          10,
-  ////          10,
-  ////          1,
-  ////          Text,
-  ////          TRANSPARENT,
-  ////          BLUE
-  ////          );
-
-
-		////(void)RtlStringCbPrintfA(Text, sizeof(Text), "HI :>");
-		////m_ImageSynth->OverlayText(
-		////	10,
-		////	20,
-		////	1,
-		////	Text,
-		////	TRANSPARENT,
-		////	BLUE
-		////);
-
-		//////Random test
-		////(void)RtlStringCbPrintfA(Text, sizeof(Text), "Data: %llx", DATA);
-		////m_ImageSynth->OverlayText(
-		////	10,
-		////	30,
-		////	2,
-		////	Text,
-		////	TRANSPARENT,
-		////	BLUE
-		////);
-
-  ////      //
-  ////      // Fill scatter gather buffers
-  ////      //
-  ////      if (!NT_SUCCESS (FillScatterGatherBuffers ())) {
-  ////          InterlockedIncrement (PLONG (&m_NumFramesSkipped));
-  ////      }
-
-  ////  }
-        
     //
     // Issue an interrupt to our hardware sink.  This is a "fake" interrupt.
     // It will occur at DISPATCH_LEVEL.
@@ -866,6 +806,11 @@ void CHardwareSimulation::SetData(PVOID data, ULONG dataLength)
 		return;
 	}
 
+	if (m_TemporaryBuffer == NULL)
+	{
+		return;
+	}
+
 	if (dataLength < m_Width * m_Height * 3)
 	{
 		return;
@@ -873,7 +818,7 @@ void CHardwareSimulation::SetData(PVOID data, ULONG dataLength)
 
 	for (ULONG y = 0; y < m_Height; y++)
 	{
-		PUCHAR buffer = m_ImageSynth->GetImageLocation(0, y);
+		PUCHAR buffer = m_TemporaryBuffer + ((m_Width * 3) * (m_Height - 1 - y));
 		PUCHAR dataLine = (PUCHAR)(data) + ((m_Width * 3) * y);
 
 		RtlCopyMemory(buffer, dataLine, m_Width * 3);
