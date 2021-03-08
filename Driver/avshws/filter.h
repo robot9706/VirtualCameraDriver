@@ -87,6 +87,7 @@ public:
 	//  Example of adding a new, custom property.
     DECLARE_PROPERTY_HANDLERS(Data)
     DECLARE_PROPERTY_HANDLERS(State)
+    DECLARE_PROPERTY_HANDLERS(Process)
 
 };
 

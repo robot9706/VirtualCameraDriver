@@ -249,6 +249,7 @@ Return Value:
         if (!NT_SUCCESS (Status)) {
             delete CapDevice;
         } else {
+            CapDevice->m_CurrentProcessId = 0;
             Device -> Context = reinterpret_cast <PVOID> (CapDevice);
         }
 
@@ -602,6 +603,10 @@ Return Value:
     m_LastMappingsCompleted = 0;
     m_InterruptTime = 0;
 
+
+    m_CurrentProcessId = (ULONG)(ULONG_PTR)PsGetCurrentProcessId();
+    DbgPrint("+++++++++ The PID that is using this camera is %d\n", m_CurrentProcessId);
+
     return
         m_HardwareSimulation -> Start (
             m_ImageSynth,
@@ -652,6 +657,8 @@ Return Value:
 {
 
     PAGED_CODE();
+
+    m_CurrentProcessId = 0;
 
     return
         m_HardwareSimulation -> Pause (
@@ -956,4 +963,9 @@ void CCaptureDevice::SetData(PVOID data, ULONG dataLength)
 DWORD CCaptureDevice::GetState()
 {
     return m_HardwareSimulation->GetState();
+}
+
+DWORD CCaptureDevice::GetProcessId()
+{
+    return m_CurrentProcessId;
 }

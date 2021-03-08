@@ -81,6 +81,11 @@ private:
     PKS_VIDEOINFOHEADER m_VideoInfoHeader;
 
     //
+    // The id of the current process that is using this filter.
+    //
+    DWORD m_CurrentProcessId;
+
+    //
     // Cleanup():
     //
     // This is the free callback for the bagged capture device.  Not providing
@@ -323,4 +328,11 @@ public:
     // Get the current state of the capture filter.
     //
     DWORD GetState();
+
+    //
+    // GetProcessId();
+    //
+    // Get the id of the current process that is using this capture filter.
+    //
+    DWORD GetProcessId();
 };

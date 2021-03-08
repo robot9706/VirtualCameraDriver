@@ -188,6 +188,50 @@ SetState(
     return STATUS_SUCCESS;
 }
 
+//  Get KSPROPERTY_CUSTOMCONTROL_DUMMY.
+NTSTATUS
+CCaptureFilter::
+GetProcess(
+    _In_ PIRP Irp,
+    _In_ PKSIDENTIFIER Request,
+    _Inout_ PVOID Data
+)
+{
+    PAGED_CODE();
+
+    CCaptureFilter* filter = reinterpret_cast<CCaptureFilter*>(KsGetFilterFromIrp(Irp)->Context);
+
+    PIO_STACK_LOCATION pIrpStack = IoGetCurrentIrpStackLocation(Irp);
+    ULONG bufferLength = pIrpStack->Parameters.DeviceIoControl.OutputBufferLength;
+
+    if (bufferLength == 0 || Data == NULL) {
+        return STATUS_SUCCESS;
+    }
+
+    CCaptureDevice* device = CCaptureDevice::Recast(KsFilterGetDevice(filter->m_Filter));
+    DWORD state = device->GetProcessId();
+    PDWORD dataPtr = (PDWORD)Data;
+
+    *dataPtr = state;
+    Irp->IoStatus.Information = sizeof(DWORD);
+
+    return STATUS_SUCCESS;
+}
+
+//  Set KSPROPERTY_CUSTOMCONTROL_DUMMY.
+NTSTATUS
+CCaptureFilter::
+SetProcess(
+    _In_ PIRP Irp,
+    _In_ PKSIDENTIFIER Request,
+    _Inout_ PVOID Data
+)
+{
+    PAGED_CODE();
+
+    return STATUS_SUCCESS;
+}
+
 /**************************************************************************
 
 	PROPERTY TABLE STUFF
@@ -214,6 +258,18 @@ DEFINE_KSPROPERTY_TABLE(CustomPropertyTable)
         (ULONG)sizeof(KSPROPERTY),					//MinProperty
         (ULONG)0,								    //MinData
         (PFNKSHANDLER)&CCaptureFilter::SetState,	//SetPropertyHandler
+        (PKSPROPERTY_VALUES)NULL,					//Values
+        0,											//RelationsCount
+        (PKSPROPERTY)NULL,							//Relations
+        (PFNKSHANDLER)NULL,							//SupportHandler
+        (ULONG)0									//SerializedSize
+    },
+    {
+        2,											//PropertyId
+        (PFNKSHANDLER)&CCaptureFilter::GetProcess,  //GetPropertyHandler
+        (ULONG)sizeof(KSPROPERTY),					//MinProperty
+        (ULONG)0,								    //MinData
+        (PFNKSHANDLER)&CCaptureFilter::SetProcess,	//SetPropertyHandler
         (PKSPROPERTY_VALUES)NULL,					//Values
         0,											//RelationsCount
         (PKSPROPERTY)NULL,							//Relations

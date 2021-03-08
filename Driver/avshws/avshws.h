@@ -28,6 +28,8 @@
 #ifndef _avshws_h_
 #define _avshws_h_
 
+#include <ntddk.h>
+
 extern "C" {
 #include <wdm.h>
 }
