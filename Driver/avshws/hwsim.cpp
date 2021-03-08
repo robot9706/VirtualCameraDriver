@@ -824,3 +824,8 @@ void CHardwareSimulation::SetData(PVOID data, ULONG dataLength)
 		RtlCopyMemory(buffer, dataLine, m_Width * 3);
 	}
 }
+
+DWORD CHardwareSimulation::GetState()
+{
+    return (DWORD)m_HardwareState;
+}

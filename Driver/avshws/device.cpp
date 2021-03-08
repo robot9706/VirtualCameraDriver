@@ -952,3 +952,8 @@ void CCaptureDevice::SetData(PVOID data, ULONG dataLength)
 {
 	m_HardwareSimulation->SetData(data, dataLength);
 }
+
+DWORD CCaptureDevice::GetState()
+{
+    return m_HardwareSimulation->GetState();
+}

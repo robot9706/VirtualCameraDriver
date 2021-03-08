@@ -298,5 +298,13 @@ public:
 	// Sets the virtual frame buffer of the simulation.
 	//
 	void SetData(PVOID data, ULONG dataLength);
+
+
+    //
+    // GetState();
+    //
+    // Get the current state of the capture filter.
+    //
+    DWORD GetState();
 };
 
